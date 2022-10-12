@@ -1,4 +1,4 @@
-# generator rush-publishx
+# generator rush-publish
 
 [![rush](https://img.shields.io/badge/rush-^5.66.2-brightgreen)](https://rushjs.io/)
 [![yeoman generator](https://img.shields.io/badge/yeoman--generator-5.6.1-brightgreen)](https://yeoman.io/generators/)
@@ -55,7 +55,7 @@ See [rush global commands](./docs/rush_GlobalCommands.md) for a `dist:package` d
 - The latest version of [Yeoman](https://github.com/yeoman/yo) and the `rush-publish` Yeoman generator. To install these tools globally, run the following command:
 
 ```bash
-npm install -g yo generator-rush-publish
+npm install -g yo generator-rush-publishx
 ```
 
 - If not done already, configure git and rush:
@@ -73,7 +73,7 @@ rush update
 Deploy the custom commands invoking:
 
 ```bash
-yo rush-publish
+yo rush-publishx
 ```
 
 This generator comes with optional subgenerator for SharePoint Framework projects. Decide if you want to deploy the [rush global commands](./docs/rush_GlobalCommands.md), or the [rush bulk commands for SPFx](./docs/rush_BulkCommandsSPFx.md), or both.
