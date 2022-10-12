@@ -1,7 +1,7 @@
 {
-    "name": "generator-rush-publish",
+    "name": "generator-rush-publishx",
     "version": "1.0.1",
-    "homepage": "https://github.com/kkazala/generator-rush-publishSPFx",
+    "homepage": "https://github.com/kkazala/generator-rush-publish",
     "license": "MIT",
     "author": {
         "name": "Kinga Kazala",
@@ -9,7 +9,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/kkazala/generator-rush-publishSPFx"
+        "url": "https://github.com/kkazala/generator-rush-publish"
     },
     "description": "Rush commands for generating changelogs and packaging changed projects.",
     "files": [
