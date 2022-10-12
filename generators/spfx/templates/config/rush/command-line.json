@@ -1,0 +1,69 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/command-line.schema.json",
+  "commands": [
+    {
+      "name": "spfx:package",
+      "commandKind": "bulk",
+      "summary": "Create SPFx packages. Update version",
+      "description": "Creates SPFx packages by running spfx:package command. \nInvokes 'gulp clean && gulp bundle --ship && gulp package-solution --ship' command.",
+      "enableParallelism": true,
+      "allowWarningsInSuccessfulBuild": true
+    },
+    {
+      "name": "spfx:package-dev",
+      "commandKind": "bulk",
+      "summary": "Create SPFx packages. Update version to prerelease",
+      "description": "Creates SPFx packages by running spfx:package-dev command. \n Invokes 'gulp clean && gulp bundle --ship --dev && gulp package-solution --ship' command.",
+      "enableParallelism": true,
+      "allowWarningsInSuccessfulBuild": true
+    },
+    {
+      "name": "spfx:copy",
+      "commandKind": "bulk",
+      "summary": "Copy SPFx packages to artifacts directory.",
+      "description": "Copies files specified in '--copied-files' parameter to the target destination specified in '--target-folder'.\n Invokes 'gulp copySPFx' command.",
+      "enableParallelism": true,
+      "allowWarningsInSuccessfulBuild": true
+    }
+  ],
+  "parameters": [
+    {
+      "parameterKind": "string",
+      "argumentName": "FOLDER_PATH",
+      "longName": "--target-folder",
+      "required": true,
+      "description": "(Optional) Location to deploy packaged solution. If relative, it is relative to each project's directory.\nIf --copy-command is used, this parameter is required.",
+      "associatedCommands": [
+        "spfx:copy"
+      ]
+    },
+    {
+      "parameterKind": "string",
+      "argumentName": "FILE_FILTER",
+      "longName": "--copied-files",
+      "required": true,
+      "description": "(Optional) Filter to select files to copy. Must be relative to the project folder.\nIf --copy-command is used, this parameter is required.",
+      "associatedCommands": [
+        "spfx:copy"
+      ]
+    },
+    {
+      "parameterKind": "flag",
+      "longName": "--quiet",
+      "shortName": "-q",
+      "description": "suppress startup information",
+      "associatedCommands": [
+        "spfx:package",
+        "spfx:package-dev"
+      ]
+    },
+    {
+      "parameterKind": "flag",
+      "longName": "--prerelease",
+      "description": "(Optional) Build a prerelease version of the solution. No tagging, no changelog updates, version is not set as tag in rush.json.",
+      "associatedCommands": [
+        "build"
+      ]
+    }
+  ]
+}

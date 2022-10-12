@@ -1,0 +1,62 @@
+﻿parameters:
+- name : PackageAll
+  displayName: Package all projects
+  type: boolean
+  default: false
+- name : Verbose
+  displayName: Enable Verbose logging
+  type: boolean
+  default: true  # change to false when ready
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - name: NodeVersion
+    value: 14
+  - name: packageAll
+    ${{ if eq(parameters.PackageAll, 'true') }}:
+      value: '--include-all'
+    ${{ else }}:
+      value: ''
+  - name: prerelease
+    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: ''
+    ${{ else }}:
+      value: '--prerelease'
+  - name: packageCommand
+    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: 'my-bulk-command' #'spfx:package'
+    ${{ else }}:
+      value: 'my-bulk-command' #'spfx:package-dev'
+  - name: verbose
+    ${{ if eq(parameters.Verbose, 'true') }}:
+      value: '--verbose'
+    ${{ else }}:
+      value: ''
+  - name: versionPolicy
+    value: '--version-policy "MyLibraries" '
+
+trigger:
+  branches:
+    include:
+    - features/*
+
+steps:
+  - checkout: self
+    persistCredentials: true
+    # https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-checkout?view=azure-pipelines#remarks
+    fetchDepth: 0
+
+  - template: templates/prerequisites.yml
+  - script: 'node common/scripts/install-run-rush.js install'
+    displayName: 'Rush Install'
+  - script: 'node common/scripts/install-run-rush.js build'
+    displayName: 'Rush Build'
+
+  - script: 'node common/scripts/install-run-rush.js dist:package
+        ${{ variables.packageAll }} ${{ variables.prerelease }}
+        --package-command ${{ variables.packageCommand }}
+        ${{ variables.versionPolicy }}
+        ${{ variables.verbose }}'
+    displayName: 'Rush ${{ variables.packageCommand }}'

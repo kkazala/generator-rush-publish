@@ -1,0 +1,99 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/command-line.schema.json",
+  "commands": [
+    {
+      "name": "dist:package",
+      "commandKind": "global",
+      "summary": "Run --package-command and --copy-command on changed/all projects",
+      "description": "Runs --package-command (bulk command) to build and package solution; then, optionally, runs --copy-command (bulk command)",
+      "safeForSimultaneousRushProcesses": true,
+      "autoinstallerName": "rush-publish",
+      "shellCommand": "node common/scripts/rush-Package.js"
+    }
+  ],
+  "parameters": [
+    {
+      "parameterKind": "string",
+      "argumentName": "COMMAND",
+      "longName": "--package-command",
+      "required": true,
+      "description": "(Required) Rush bulk command to execute when packaging the projects.",
+      "associatedCommands": [
+        "dist:package"
+      ]
+    },
+    {
+      "parameterKind": "string",
+      "argumentName": "COMMAND",
+      "longName": "--copy-command",
+      "required": false,
+      "description": "(Optional) Rush bulk command to execute when copying the projects.",
+      "associatedCommands": [
+        "dist:package"
+      ]
+    },
+    {
+      "parameterKind": "flag",
+      "longName": "--include-all",
+      "description": "(Optional) If this flag is specified, all packages with shouldPublish=true in rush.json or with a specified version policy will be published if their version is newer than published version.",
+      "associatedCommands": [
+        "dist:package"
+      ]
+    },
+    {
+      "parameterKind": "flag",
+      "longName": "--prerelease",
+      "description": "(Optional) Build a prerelease version of the solution. No tagging, no changelog updates, version is not set as tag in rush.json.",
+      "associatedCommands": [
+        "dist:package"
+      ]
+    },
+    {
+      "parameterKind": "string",
+      "argumentName": "SUFFIX",
+      "longName": "--suffix",
+      "shortName": "-t",
+      "description": "(Optional) Append a suffix to all changed versions.",
+      "associatedCommands": [
+        "dist:package"
+      ]
+    },
+    {
+      "parameterKind": "string",
+      "argumentName": "BRANCH",
+      "longName": "--target-branch",
+      "shortName": "-b",
+      "description": "If this parameter is specified, compare the checked out branch with the specified branch to determine which projects were changed. If this parameter is not specified, the checked out branch is compared against the \"main\" branch.",
+      "associatedCommands": [
+        "dist:package"
+      ]
+    },
+    {
+      "parameterKind": "string",
+      "argumentName": "POLICY",
+      "longName": "--version-policy",
+      "description": "Version policy name. Only projects with this version policy will be published if used with --include-all.",
+      "associatedCommands": [
+        "dist:package"
+      ]
+    },
+    {
+      "parameterKind": "flag",
+      "longName": "--quiet",
+      "shortName": "-q",
+      "description": "Suppress startup information",
+      "associatedCommands": [
+        "dist:package"
+      ]
+    },
+    {
+      "parameterKind": "flag",
+      "longName": "--verbose",
+      "shortName": "-v",
+      "description": "Display the logs during the build, rather than just displaying the build status summary",
+      "associatedCommands": [
+        "dist:package"
+      ]
+    }
+  ]
+}

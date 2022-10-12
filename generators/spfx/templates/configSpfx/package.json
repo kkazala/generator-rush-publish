@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "spfx:package": "gulp clean && gulp bundle --ship && gulp package-solution --ship",
+    "spfx:package-dev": "gulp clean && gulp bundle --ship --prerelease && gulp package-solution --ship",
+    "spfx:copy": "gulp copySPFx"
+  }
+}

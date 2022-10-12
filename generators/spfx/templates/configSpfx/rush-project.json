@@ -1,0 +1,6 @@
+﻿{
+    "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush-project.schema.json",
+    "incrementalBuildIgnoredGlobs": [
+        "package-solution.json"
+    ]
+}

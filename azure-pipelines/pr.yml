@@ -1,0 +1,31 @@
+pool:
+  vmImage: 'ubuntu-latest'
+
+trigger: none
+
+variables:
+  FORCE_COLOR: 1
+  isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
+
+jobs:
+  - job: PRBuild
+    condition: and(succeeded(),eq(variables.isPR, 'true'))
+    strategy:
+      matrix:
+        'NodeJs 14':
+          NodeVersion: 14
+        'NodeJs 16':
+          NodeVersion: 16
+
+    steps:
+      - checkout: self
+        persistCredentials: true
+        # https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-checkout?view=azure-pipelines#remarks
+        fetchDepth: 0
+      - template: templates/prerequisites.yml
+
+      - script: 'node common/scripts/install-run-rush.js change --verify '
+        displayName: 'Verify Change Logs'
+
+      - script: 'node common/scripts/install-run-rush.js install'
+        displayName: 'Rush Install'
