@@ -26,9 +26,9 @@ variables:
       value: '--prerelease'
   - name: packageCommand
     ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
-      value: 'my-bulk-command' #'spfx:package'
+      value: 'spfx:package'
     ${{ else }}:
-      value: 'my-bulk-command' #'spfx:package-dev'
+      value: 'spfx:package-dev'
   - name: verbose
     ${{ if eq(parameters.Verbose, 'true') }}:
       value: '--verbose'
