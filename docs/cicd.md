@@ -14,9 +14,30 @@
 
 If you want to automatically build and deploy changed projects whenever you commit your changes to the features/* branch, you can use [CI/CD](../azure-pipelines/rush-publishx.yml) pipeline which will detect the branch you are on, and build, package and deploy prerelease versions to your Development SPO site.
 
+Executing the below pipeline will invoke the following command:
+
+```bash
+rush dist:package --prerelease `
+  --package-command spfx:package-dev `
+  --copy-command spfx:copy `
+  --target-folder /home/vsts/work/1/a `
+  --copied-files ./sharepoint/solution/*.sppkg,./sharepoint/assets/elements.xml `
+  --verbose
+```
+
 ```yml
-# this is a subset of variables, please refer to ../azure-pipelines/rush-publishx.yml
 variables:
+  - name: packageAll
+    ${{ if eq(parameters.PackageAll, 'true') }}:
+      value: '--include-all'
+    ${{ else }}:
+      value: ''
+  # version policy is only useful with --include-all
+  - name: versionPolicy
+    ${{ if eq(parameters.PackageAll, 'true') }}:
+      value: '--version-policy "MyLibraries" '
+    ${{ else }}:
+      value: ''
   - name: prerelease
     ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
       value: ''
@@ -67,12 +88,13 @@ steps:
 Once you are ready, you will create a Pull Request to merge your changes to the main branch.
 
 To ensure that change files are generated before PR is completed, it's recommended to create a [PR](../azure-pipelines/pr.yml) pipeline that is used in [branch policy](https://learn.microsoft.com/en-us/azure/devops/repos/git/branch-policies?view=azure-devops&tabs=browser#build-validation) on `main` branch.
+If release managers manually execute `rush version`, you may want to exclude `releases/*` branch, becasue `rush change --verify` fill fail after the change files have been deleted.
 
 ```yml
 trigger: none
 
 variables:
-  isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
+  isPR: $[and(eq(variables['Build.Reason'], 'PullRequest'),startsWith(variables['System.PullRequest.SourceBranch'], 'refs/heads/features/'))]
 
 jobs:
   - job: PRBuild
@@ -100,7 +122,20 @@ You may edit `changelog.json` file if you want to update the change log. Do NOT 
 
 Unless you are allowed to commit directly to the `main`, you need to create a new branch for your release. If you are using the [PR](../azure-pipelines/pr.yml) pipeline described above, make sure that the branch you are working on for example `releases/*` and NOT `features/*`. You already deleted change files, and `rush change -v` will fail.
 
+Once you are ready to publish and deploy stable version of your packages, you may manually start the  [CI/CD](../azure-pipelines/rush-publishx.yml). If invoked on the `main` branch, the following command will be invoked by the pipeline:
+
+```bash
+rush dist:package `
+  --package-command spfx:package `
+  --copy-command spfx:copy `
+  --target-folder /home/vsts/work/1/a `
+  --copied-files ./sharepoint/solution/*.sppkg,./sharepoint/assets/elements.xml `
+  --verbose
+```
+
+## Important
+
 You may find example azure pipelines in [azure-pipelines](../azure-pipelines/) folder.
-> **Important**: New pipelines created after the September 2022 Azure DevOps sprint 209 update have Shallow fetch enabled by default and configured with a depth of 1.
->
->See [Shallow fetch](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-checkout?view=azure-pipelines#shallow-fetch)
+
+New pipelines created after the September 2022 Azure DevOps sprint 209 update have Shallow fetch enabled by default and configured with a depth of 1.
+See [Shallow fetch](https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-checkout?view=azure-pipelines#shallow-fetch)

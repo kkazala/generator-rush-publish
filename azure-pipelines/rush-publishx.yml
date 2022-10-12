@@ -19,6 +19,12 @@ variables:
       value: '--include-all'
     ${{ else }}:
       value: ''
+  # version policy is only useful with --include-all
+  - name: versionPolicy
+    ${{ if eq(parameters.PackageAll, 'true') }}:
+      value: '--version-policy "MyLibraries" '
+    ${{ else }}:
+      value: ''
   - name: prerelease
     ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
       value: ''
@@ -34,8 +40,6 @@ variables:
       value: '--verbose'
     ${{ else }}:
       value: ''
-  - name: versionPolicy
-    value: '--version-policy "MyLibraries" '
 
 trigger:
   branches:
