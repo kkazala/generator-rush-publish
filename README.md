@@ -1,4 +1,4 @@
-# rush-publish
+# generator rush-publishx
 
 [![rush](https://img.shields.io/badge/rush-^5.66.2-brightgreen)](https://rushjs.io/)
 [![yeoman generator](https://img.shields.io/badge/yeoman--generator-5.6.1-brightgreen)](https://yeoman.io/generators/)
