@@ -22,6 +22,9 @@ gulp bundle --ship && gulp package-solution --ship' command.
 ```
 
 > The `spfx:package` and  `spfx:package-dev` have all the usual parameters by default enabled for bulk commands, plus `--quiet`.
+`spfx:package-dev`, bumps the revision number in `/config/package-solution.json` of changed projects, whilst `spfx:package` copies version from `package.json` to the `/config/package-solution.json`, making sure it has `major.minor.patch.0` format.
+
+To make sure that these changes will not be detected by `rush change`, `package-solution.json` are registered in [rush-project.json (experimental)](https://rushjs.io/pages/configs/rush-project_json) files specific to individual projects.
 
 ## Package SPFx solution
 

@@ -15,12 +15,16 @@ steps:
   - script: 'node common/scripts/install-run-rush.js build'
     displayName: 'Rush Build'
 
-  - script: 'node common/scripts/install-run-rush.js dist:package
-        ${{ variables.packageAll }} ${{ variables.prerelease }}
-        --package-command ${{ variables.packageCommand }}
-        ${{ variables.versionPolicy }}
-        ${{ variables.verbose }}'
+  - script: 'node common/scripts/install-run-rush.js dist:package ${{ variables.packageAll }} ${{ variables.prerelease }}
+          ${{ variables.cmdPackage }} ${{ variables.cmdCopy }}
+          ${{ variables.versionPolicy }} ${{ variables.verbose }}'
     displayName: 'Rush ${{ variables.packageCommand }}'
+
+  #Publish artifacts
+  - task: PublishBuildArtifacts@1
+    inputs:
+      artifactName: 'SPFx'
+    displayName: 'Publish Artifact: SPFx'
 ```
 
 You may find example azure pipelines in [azure-pipelines](../azure-pipelines/) folder.
