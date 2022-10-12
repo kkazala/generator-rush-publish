@@ -5,11 +5,15 @@ trigger: none
 
 variables:
   FORCE_COLOR: 1
-  isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
+  # isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
+  isPR: $[and(
+    eq(variables['Build.Reason'], 'PullRequest'),
+    startsWith(variables['System.PullRequest.SourceBranch'], 'refs/heads/features/')
+  )]
 
 jobs:
   - job: PRBuild
-    condition: and(succeeded(),eq(variables.isPR, 'true'))
+    condition: eq(variables.isRelease, 'false')
     strategy:
       matrix:
         'NodeJs 14':

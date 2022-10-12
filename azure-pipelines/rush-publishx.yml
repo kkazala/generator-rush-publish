@@ -42,6 +42,8 @@ trigger:
     include:
     - features/*
 
+#path exclude change files (and package-solution.json?)
+
 steps:
   - checkout: self
     persistCredentials: true
