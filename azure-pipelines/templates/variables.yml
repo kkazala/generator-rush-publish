@@ -1,0 +1,51 @@
+﻿parameters:
+- name : PackageAll
+  displayName: Package all projects
+  type: boolean
+  default: false
+- name: VersionPolicy
+  displayName: Only used with "package all"
+  default: ''
+- name : Verbose
+  displayName: Enable Verbose logging
+  type: boolean
+  default: true  # change to false when ready
+
+variables:
+  - name: NodeVersion
+    value: 14
+  - name: packageAll
+    ${{ if eq(parameters.PackageAll, 'true') }}:
+      value: '--include-all'
+    ${{ else }}:
+      value: ''
+  # version policy is only useful with --include-all
+  - name: versionPolicy
+    ${{ if and(eq(parameters.PackageAll, 'true'), ne(parameters.VersionPolicy, '')) }}:
+      value: '--version-policy "MyLibraries" '
+    ${{ else }}:
+      value: ''
+  - name: prerelease
+    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: ''
+    ${{ else }}:
+      value: '--prerelease'
+  - name: verbose
+    ${{ if eq(parameters.Verbose, 'true') }}:
+      value: '--verbose'
+    ${{ else }}:
+      value: ''
+  - name: cmdPackage
+    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: '--package-command spfx:package'
+    ${{ else }}:
+      value: '--package-command spfx:package-dev'
+  - name: cmdCopy
+    value: '--copy-command "spfx:copy --target-folder $(Build.ArtifactStagingDirectory) --copied-files ./sharepoint/solution/*.sppkg,./sharepoint/assets/elements.xml" '
+  - name: packageCommand # used in step name
+    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: 'spfx:package'
+    ${{ else }}:
+      value: 'spfx:package-dev'
+  - name: targetBranch # used to detect changd projects and to commit changed rush.json and changelog files
+    value: '--target-branch main'

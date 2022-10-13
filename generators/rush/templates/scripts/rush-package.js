@@ -26,11 +26,12 @@ class PublishChangedParams {
  * if (!packageAll && !prerelease): getChangedProjectReleases from package.json and rush.json tags
  * @param {*} packageAll: return all
  * @param {*} prerelease: ProjectChangeAnalyzer.getChangedProjectsAsync
- * @param {*} targetBranch: (optional) used with prerelease
+ * @param {*} targetBranch: (optional) used with prerelease, e.g main, features/featureA
  * @param {*} versionPolicy: (optional) used with packageAll
  * @returns
  */
 async function getRushProjects(packageAll, prerelease, targetBranch, versionPolicy) {
+    // rushUtils.getChangedProjectsAsync requires target branch in a origin/branch name format
     return (packageAll)
         ? rushUtils.getRushProjects(versionPolicy)
         : (prerelease)
@@ -66,6 +67,7 @@ async function PublishChanged() {
     params.getParams();
     params.validateOptionalParams();
 
+    //target branch in origin/branchName format
     const rushProjects = await getRushProjects(params.packageAll, params.prerelease, params.targetBranch, params.versionPolicy);
     // if no changed projects, exit(0)
     assertProjects(rushProjects, params.packageAll);
@@ -88,8 +90,9 @@ async function PublishChanged() {
         // if !params.targetBranch, changes are made locally and will NOT be commited
         //spfx:package
         rushUtils.packageProjects(params.packageCommand, args);
+        //target branch in 'branchName' format
         rushUtils.tagChangedProjects(rushProjects, params.suffix, params.targetBranch);
-        rushUtils.saveChangedProjectsTags(rushProjects, params.targetBranch);
+        rushUtils.saveChangedProjects(targetBranch);
 
         if (params.copyCommand !== undefined) {
             //spfx:copy

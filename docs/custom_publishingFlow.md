@@ -1,14 +1,14 @@
 ﻿
-# Deploy your SPFx project to a DEV environment
+# Deploing SPFx project to a DEV environment
 
-For SPFx projects, `rush build` invokes `gulp bundle`, as defined in each project's package.json file. Each changed project will be rebuilt, but you will have mismatching versions in `/config/package-solution.json` and `package.json`.
+For SPFx projects, `rush build` invokes `gulp bundle`, as defined in each project's `package.json` file. Each changed project will be rebuilt, but you will have mismatching versions in`/config/package-solution.json`and`package.json`.
 > See [How to version new SharePoint Framework projects](https://n8d.at/how-to-version-new-sharepoint-framework-projects) for details on SPFx projects versioning.
 
 ## 1. Prepare for deployment
 
 Before deploying new version of your solution, you have to update the version number in `/config/package-solution.json`. Otherwise, you would need to uninstall your solution, delete it from Recycle Bin, and delete it from the 2nd stage Recycle Bin.
 
-`dist:package --prerelease` + `spfx:package-dev`:
+### `dist:package --prerelease` + `spfx:package-dev`
 
 - builds and packages changed projects using bulk command referenced in `--package-command` parameter
 - `spfx:package-dev`, bumps the revision number in `/config/package-solution.json` of changed projects
@@ -27,7 +27,9 @@ rush dist:package --prerelease `
   --quiet
 ```
 
-### `spfx:package-dev`
+Now you can use the .sppkg packages and deploy them to your Dev environment for testing
+
+#### `spfx:package-dev`
 
 Bumps revision version for each **changed** project, and creates a package for deployment.
 
@@ -35,14 +37,16 @@ Navigate to your project. If the version number in `package.json` is **0.0.1**, 
 Make some changes in your project and run `rush spfx:package-dev` again. The version should now be set to **0.0.1.1**.
 > If you invoke `rush build` or `gulp bundle` without `--ship` parameter, the `setVersion` will not update solution version in `/config/package-solution.json`.
 
-### `spfx:copy`
+#### `spfx:copy`
 
 Copies your packages, saved under `sharepoint/solution`, to a target location. You may now deploy them to a target environment.
 > Saving packages in a target location may be useful if you want to automate deployment with a CI/CD pipeline.
 
 ## 2. Provide change files
 
-Rush [publishing workflow](https://rushjs.io/pages/maintainer/publishing/) requires developers to provide change files. Generate them using `rush change`.
+Once you are ready to created Pull Request, you should create change files for all changed projects.
+
+Rush [publishing workflow](https://rushjs.io/pages/maintainer/publishing/) requires developers to provide change files and it's recommended to create branch policy on `main` branch, that invokes `rush change --verify`.
 
 You may consider using `rush whatchanged` custom command, created by  [rush-conventionalcommits](https://www.npmjs.com/package/generator-rush-conventionalcommits) generator, if you want to see what exactly has changed, and what change type you should use. **Note** this generator configures `commitlint`.
 
@@ -55,6 +59,8 @@ git add .
 git commit -m "..."
 git push
 ```
+
+You will find your change fules in `common/changes` folder. If you invoke `rush change` or `rush dist:package --prerelease` now, there will be no changed projects detected.
 
 # Deploy your project to a PRODUCTION environment
 

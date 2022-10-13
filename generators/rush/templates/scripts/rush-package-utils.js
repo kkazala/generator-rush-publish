@@ -24,6 +24,9 @@ class RushUtil {
     get gitVersionBumpCommitMessage() {
         return this.rushConfiguration.gitVersionBumpCommitMessage;
     }
+    get gitRemoteDefaultRemote() {
+        return this.rushConfiguration.repositoryDefaultRemote;
+    }
     get gitRemoteDefaultBranch() {
         return `${this.rushConfiguration.repositoryDefaultRemote}/${this.rushConfiguration.repositoryDefaultBranch}`;
     }
@@ -73,7 +76,9 @@ class RushUtil {
     // the project list is calculated by rush ProjectChangeAnalyzer
     // Gets a list of projects that have changed in the current state of the repo when compared to the specified branch
     async getChangedProjectsAsync(currentBranch) {
-        console.log("Get all changed projects (ProjectChangeAnalyzer)")
+        // rushUtils.getChangedProjectsAsync requires target branch in a origin/branch name format
+        currentBranch = this._ensureRemote(currentBranch);
+        console.log(`Get all changed projects for branch ${currentBranch}`)
 
         const projectAnalyzer = new rushLib.ProjectChangeAnalyzer(this.rushConfiguration);
         const terminal = new rushCore.Terminal(new rushCore.ConsoleTerminalProvider({ verboseEnabled: false }));
@@ -120,12 +125,54 @@ class RushUtil {
                 console.log(COLORS.Yellow + `tag ${tagName} already exists. Skipping.` + COLORS.Reset);
             }
         });
-        if (targetBranch !== undefined) {
-            Util.executeCommand(`git push origin HEAD:${targetBranch} --tags`);
-        }
-    }
-    saveChangedProjectsTags(changedProjects, targetBranch) {
         const rushJsonPath = this.rushConfiguration.rushJsonFile; //The absolute path to the "rush.json"
+        this._recordTagsInRushJson(changedProjects, rushJsonPath);
+    }
+    saveChangedProjects(targetBranch) {
+
+        if (targetBranch !== undefined) {
+            console.log(`* COMMIT changes to ${targetBranch}`)
+            const tempBranch = 'version/bump-' + new Date().getTime();
+            const rushJsonPath = this.rushConfiguration.rushJsonFile; //The absolute path to the "rush.json"
+
+            //Make changes in temp branch
+            this._checkout(tempBranch);
+            Util.executeCommand(`git add "${rushJsonPath}"`);
+
+            if (this._hasChanges('rush.json')) {
+                Util.executeCommand(`git commit -m "${this.gitVersionBumpCommitMessage}"`); // --no-verify
+                Util.executeCommand(`git push origin HEAD:${tempBranch} --follow-tags  --verbose `); // publishGit.push(tempBranch //  --no-verify
+                // Now merge to target branch.
+                console.log(`* MERGE to ${targetBranch}`)
+                this._mergeToBranch(tempBranch, targetBranch);
+
+                //delete temp branch
+                console.log(`* DELETE  ${tempBranch}`)
+                this._deleteBranch(tempBranch);                     //publishGit.deleteBranch(tempBranch,
+                return true;
+            }
+            else {
+                console.log(COLORS.Red + `rush.json has no changes, cannot be commited` + COLORS.Reset);
+                return false;
+            }
+        }
+        else {
+            console.log("Changes made locally. Remember to commit.");
+        }
+
+
+    }
+    _hasChanges(fileName) {
+        //ensure rush.json is staged
+        //if, during testing:
+        // - you set tag in rush.json to new version number
+        // - the saveChangedProjectsTags() set tag to the correct version
+        // - the resulting rush.json is identical to the version from before your manual change
+        // and in effect, it's removed from "changed files" index and cannot be commited
+        const stagedFiles = this._getStagedInfo();
+        return stagedFiles.includes(fileName);
+    }
+    _recordTagsInRushJson(changedProjects, rushJsonPath) {
         let publishedVersionUpdated = false;
 
         const rushJson = JSON.parse(
@@ -146,23 +193,9 @@ class RushUtil {
             });
         }
         if (publishedVersionUpdated) {
-            console.log(COLORS.Green + "Recording new published versions in rush.json" + COLORS.Reset);
-            if (targetBranch === undefined) {
-                // make changes locally
-                Util.writeJSONFile(rushJsonPath, JSON.stringify(rushJson, null, 2));
-            }
-            else {
-                // Save changes to file and commit file to repo
-                const tempBranch = 'version/bump-' + new Date().getTime();
-                Util.writeJSONFile(rushJsonPath, JSON.stringify(rushJson, null, 2));
-                this._checkout(tempBranch);
-                const hasChanges = this._commitToBranch(tempBranch, rushJsonPath);
-                this._mergeToBranch(tempBranch, targetBranch, hasChanges);
-
-            }
+            Util.writeJSONFile(rushJsonPath, JSON.stringify(rushJson, null, 2));
         }
     }
-
     _createTagName(packageName, version,) {
         const separator = this.rushConfiguration.gitTagSeparator ?? DEFAULT_GIT_TAG_SEPARATOR; // DEFAULT_GIT_TAG_SEPARATOR: '-'
         return packageName + `${separator}v` + version;
@@ -179,39 +212,22 @@ class RushUtil {
     _checkout(branchName) {
         Util.executeCommand(`git checkout -b ${branchName}`);
     }
-    _commitToBranch(branchName, rushJsonPath) {
-        Util.executeCommand(`git add "${rushJsonPath}"`);
-        //ensure rush.json is staged
-        //if, during testing:
-        // - you set tag in rush.json to new version number
-        // - the saveChangedProjectsTags() set tag to the correct version
-        // - the resulting rush.json is identical to the version from before your manual change
-        // and in effect, it's removed from "changed files" index and cannot be commited
-        const stagedFiles = this._getStagedInfo();
-        if (stagedFiles.includes('rush.json')) {
-            Util.executeCommand(`git commit -m "${this.gitVersionBumpCommitMessage}"`); // --no-verify
-            Util.executeCommand(`git push origin HEAD:${branchName} --follow-tags  --verbose `); //  --no-verify
-            return true;
-        }
-        else {
-            console.log(COLORS.Red + `rush.json has no changes, cannot be commited` + COLORS.Reset);
-            return false;
-        }
+
+    _mergeToBranch(sourceBranch, targetBranch) {
+        Util.executeCommand(`git fetch origin --prune`);                                        //publishGit.fetch();
+        Util.executeCommand(`git checkout ${targetBranch}`);                                    //publishGit.checkout(targetBranch);
+        Util.executeCommand(`git pull origin ${targetBranch}`);                                                 //publishGit.pull
+        Util.executeCommand(`git merge ${sourceBranch} --no-edit`);                             //publishGit.merge(tempBranch
+        Util.executeCommand(`git push origin HEAD:${targetBranch} --follow-tags  --verbose `);  //publishGit.merge(tempBranch
     }
-    _mergeToBranch(sourceBranch, targetBranch, hasChanges) {
-        Util.executeCommand(`git fetch origin --prune`);
-        Util.executeCommand(`git checkout ${targetBranch}`);
-        Util.executeCommand(`git pull origin`);
-        if (hasChanges) {
-            Util.executeCommand(`git merge ${sourceBranch} --no-edit`);
-            Util.executeCommand(`git push origin HEAD:${targetBranch} --follow-tags  --verbose `); //  --no-verify
-        }
-        Util.executeCommand(`git branch -d ${sourceBranch}`);
-        if (this._getRemoteBranches().includes(sourceBranch)) {
-            Util.executeCommand(`git push origin --delete ${sourceBranch}`);
+
+    _deleteBranch(branchName) {
+        Util.executeCommand(`git branch -d ${branchName}`);
+        if (this._getRemoteBranches().includes(branchName)) {
+            Util.executeCommand(`git push origin --delete ${branchName}`);
         }
         else {
-            console.log(`Branch ${sourceBranch} does not exist in the remote repository, nothing to delete`);
+            console.log(`Branch ${branchName} does not exist in the remote repository, nothing to delete`);
         }
     }
 
@@ -220,6 +236,15 @@ class RushUtil {
     }
     _getRemoteBranches() {
         return Util.executeCommandReturn(`git branch -a`).split('\n');
+    }
+    _ensureRemote(branchName) {
+        // rushUtils.getChangedProjectsAsync requires target branch in a origin/branch name format
+        if (!branchName.startsWith(this.rushConfiguration.repositoryDefaultRemote)) {
+            return `${this.rushConfiguration.repositoryDefaultRemote}/${branchName}`;
+        }
+        else {
+            return branchName;
+        }
     }
 }
 class Util {

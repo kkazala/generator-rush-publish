@@ -3,44 +3,35 @@
   displayName: Package all projects
   type: boolean
   default: false
+- name: VersionPolicy
+  displayName: Version Policy (only if "package all")
+  default: '-'
 - name : Verbose
   displayName: Enable Verbose logging
   type: boolean
-  default: true  # change to false when ready
+  default: false
 
+appendCommitMessageToRunName: false
+name: ${{ variables['Build.Reason'] }} for ${{ variables['Build.SourceBranchName'] }}
 pool:
   vmImage: 'ubuntu-latest'
 
-variables:
-  - name: NodeVersion
-    value: 14
-  - name: packageAll
-    ${{ if eq(parameters.PackageAll, 'true') }}:
-      value: '--include-all'
-    ${{ else }}:
-      value: ''
-  - name: prerelease
-    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
-      value: ''
-    ${{ else }}:
-      value: '--prerelease'
-  - name: packageCommand
-    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
-      value: 'spfx:package'
-    ${{ else }}:
-      value: 'spfx:package-dev'
-  - name: verbose
-    ${{ if eq(parameters.Verbose, 'true') }}:
-      value: '--verbose'
-    ${{ else }}:
-      value: ''
-  - name: versionPolicy
-    value: '--version-policy "MyLibraries" '
-
+# update triggers according to your needs
 trigger:
   branches:
     include:
     - features/*
+  paths:
+    include:
+    - spfx-apps
+    - spfx-libraries
+
+variables:
+  - template: templates/variables.yml
+    parameters:
+      PackageAll: ${{ parameters.PackageAll }}
+      VersionPolicy: ${{ parameters.VersionPolicy }}
+      Verbose: ${{ parameters.Verbose }}
 
 steps:
   - checkout: self
@@ -56,9 +47,9 @@ steps:
 
   - script: 'node common/scripts/install-run-rush.js dist:package ${{ variables.packageAll }} ${{ variables.prerelease }}
           ${{ variables.cmdPackage }} ${{ variables.cmdCopy }}
+          ${{ variables.targetBranch }}
           ${{ variables.versionPolicy }} ${{ variables.verbose }}'
     displayName: 'Rush ${{ variables.packageCommand }}'
-
   #Publish artifacts
   - task: PublishBuildArtifacts@1
     inputs:
