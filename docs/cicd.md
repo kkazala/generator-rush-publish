@@ -149,4 +149,10 @@ It builds and packages stable versions, which you can then deploy to your produc
 
 You can use the artifacts in a deployment pipeline [tiggered](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/pipeline-triggers?view=azure-devops) by the **CI/CD** pipeline.
 
-**Note:** If you run this pipeline on the `main` branch again, no artifacts will be published. This is because `rush dist:package` records published (stable) versions in `rush.json` and only projects with different version numbers will be detected.
+The `rush.json` file is updated to record the last published versions:
+
+![](../assets/rushJson.png)
+
+**Note:** If you now run this pipeline on the `main` branch again, no artifacts will be published.
+
+`rush dist:package` records published (stable) versions in `rush.json` and only projects with different version numbers are detected.
