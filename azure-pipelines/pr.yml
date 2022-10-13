@@ -1,3 +1,5 @@
+appendCommitMessageToRunName: false
+name: ${{ variables['Build.Reason'] }} for ${{ variables['Build.SourceBranchName'] }}
 pool:
   vmImage: 'ubuntu-latest'
 
@@ -5,12 +7,11 @@ trigger: none
 
 variables:
   FORCE_COLOR: 1
-  isPR: $[and(eq(variables['Build.Reason'], 'PullRequest'),startsWith(variables['System.PullRequest.SourceBranch'], 'refs/heads/features/')
-  )]
+  isPR: $[and(eq(variables['Build.Reason'], 'PullRequest'),startsWith(variables['System.PullRequest.SourceBranch'], 'refs/heads/features/'))]
 
 jobs:
   - job: PRBuild
-    condition: eq(variables.isRelease, 'false')
+    condition: and(succeeded(),eq(variables.isPR, 'true'))
     strategy:
       matrix:
         'NodeJs 14':

@@ -1,7 +1,7 @@
 ﻿
-# Deploy your SPFx project to a DEV environment
+# Deploing SPFx project to a DEV environment
 
-For SPFx projects, `rush build` invokes `gulp bundle`, as defined in each project's package.json file. Each changed project will be rebuilt, but you will have mismatching versions in `/config/package-solution.json` and `package.json`.
+For SPFx projects, `rush build` invokes `gulp bundle`, as defined in each project's `package.json` file. Each changed project will be rebuilt, but you will have mismatching versions in`/config/package-solution.json`and`package.json`.
 > See [How to version new SharePoint Framework projects](https://n8d.at/how-to-version-new-sharepoint-framework-projects) for details on SPFx projects versioning.
 
 ## 1. Prepare for deployment

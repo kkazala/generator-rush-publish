@@ -52,7 +52,8 @@ Optional arguments:
 
 ```
 
-**Note:** The commands defined in `--package-command` and `--copy-command` parameters must exist and must be invoked using parameters, as defined in `command-line.json`. The `dist:package` does not append any additional parameters.
+**Note:** The commands defined in `--package-command` and `--copy-command` parameters must be **existing rush bulk commands** defined in `command-line.json`.
+The `dist:package` simply invokes them without appending any additional parameters. They could be called `--command1` and `--command2` just as well.
 
 ## Publishing prerelease
 
@@ -94,7 +95,7 @@ rush dist:package --prerelease `
 - invokes bulk `--package-command` command
 - invokes bulk `--copy-command` (this command is optional)
 
-### How are changed projects detected?
+### How are changed projects detected in `--prerelease`?
 
 **Changed projects** are detected using [ProjectChangeAnalyzer.getChangedProjectsAsync](https://api.rushstack.io/pages/rush-lib.projectchangeanalyzer.getchangedprojectsasync/) which returns projects that have changed in the current state of the repo when compared to the specified branch.
 If `--target-branch` is specified, it compares the checked out branch with the specified branch to determine which projects were changed. Otherwise, the checked out branch is compared against the `main` branch.
