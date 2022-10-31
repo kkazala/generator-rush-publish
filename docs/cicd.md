@@ -59,11 +59,11 @@ If you are running **CI/CD** on main branch, and you don't allow pushing to main
 
 ## Continuous Integration/Continuous Deployment
 
-If you want to automatically build and deploy changed projects whenever you commit changes to the `features/*` branch, you can use [CI/CD](../azure-pipelines/rush-publishx.yml) pipeline which is automatically triggered for `features/*` branches.
+If you want to automatically build and deploy changed projects whenever you commit changes to the `features/*` branch, you can use [CI/CD](../azure-pipelines/rush-publish.yml) pipeline which is automatically triggered for `features/*` branches.
 
 ![CICD](../assets/cicd.png)
 
-Executing the [CI/CD](../azure-pipelines/rush-publishx.yml) pipeline in `features/*` branch will invoke the following command:
+Executing the [CI/CD](../azure-pipelines/rush-publish.yml) pipeline in `features/*` branch will invoke the following command:
 
 ```bash
 rush dist:package --prerelease `
@@ -129,7 +129,7 @@ rush version --bump
 
 Merging `releases/*` with main branch will not trigger build validation.
 
-Once you are ready to publish and deploy stable version of your packages, you may manually start the  [CI/CD](../azure-pipelines/rush-publishx.yml) pipeline.
+Once you are ready to publish and deploy stable version of your packages, you may manually start the  [CI/CD](../azure-pipelines/rush-publish.yml) pipeline.
 
 ![manual start](../assets/manual.png)
 
